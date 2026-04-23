@@ -1,0 +1,1041 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>TrackDatAzz</title>
+<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Rajdhani:wght@300;400;600;700&family=Share+Tech+Mono&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg-deep:#0a0c10; --bg-mid:#111520; --bg-card:#161b26; --bg-card2:#1c2235;
+  --accent:#00e5ff; --accent2:#ff4081; --gold:#ffd600; --ruby:#ff2d55;
+  --ruby-glow:rgba(255,45,85,0.3); --purple:#b388ff;
+  --border:rgba(0,229,255,0.18); --border2:rgba(0,229,255,0.35);
+  --text:#e8eaf6; --text-muted:#7986a0; --text-dim:#4a5568;
+  --success:#76ff03;
+  --font-hud:'Orbitron',monospace; --font-body:'Rajdhani',sans-serif; --font-mono:'Share Tech Mono',monospace;
+  --glow:0 0 20px rgba(0,229,255,0.25); --glow2:0 0 30px rgba(0,229,255,0.4);
+  --radius:8px; --radius-lg:14px;
+}
+*{box-sizing:border-box;margin:0;padding:0;}
+body{background:var(--bg-deep);color:var(--text);font-family:var(--font-body);font-size:16px;min-height:100vh;overflow-x:hidden;}
+body::before{content:'';position:fixed;inset:0;background:repeating-linear-gradient(0deg,transparent,transparent 39px,rgba(0,229,255,0.025) 39px,rgba(0,229,255,0.025) 40px),repeating-linear-gradient(90deg,transparent,transparent 39px,rgba(0,229,255,0.025) 39px,rgba(0,229,255,0.025) 40px);pointer-events:none;z-index:0;}
+body.cursor-crosshair{cursor:crosshair;}
+body.cursor-pointer-lock{cursor:none;}
+#custom-cursor{display:none;position:fixed;pointer-events:none;z-index:99999;transform:translate(-50%,-50%);font-size:20px;}
+body.cursor-pointer-lock #custom-cursor{display:block;}
+#app{position:relative;z-index:1;min-height:100vh;display:flex;flex-direction:column;}
+/* TOPBAR */
+#topbar{position:sticky;top:0;z-index:100;background:rgba(10,12,16,0.93);backdrop-filter:blur(12px);border-bottom:1px solid var(--border);display:flex;align-items:center;padding:0 14px;height:56px;gap:10px;}
+.logo{font-family:var(--font-hud);font-size:15px;font-weight:900;color:var(--accent);text-shadow:0 0 15px rgba(0,229,255,0.7);letter-spacing:2px;flex-shrink:0;}
+.logo span{color:var(--accent2);text-shadow:0 0 15px rgba(255,64,129,0.7);}
+#topbar-nav{display:flex;gap:3px;flex:1;justify-content:center;flex-wrap:wrap;}
+.nav-btn{background:transparent;border:1px solid transparent;color:var(--text-muted);font-family:var(--font-hud);font-size:7.5px;letter-spacing:1px;padding:5px 7px;border-radius:var(--radius);cursor:pointer;transition:all 0.2s;text-transform:uppercase;}
+.nav-btn:hover{color:var(--accent);border-color:var(--border);}
+.nav-btn.active{color:var(--accent);border-color:var(--accent);background:rgba(0,229,255,0.08);box-shadow:var(--glow);}
+#topbar-right{display:flex;align-items:center;gap:7px;flex-shrink:0;}
+#user-icon{width:30px;height:30px;border-radius:50%;background:var(--bg-card2);border:2px solid var(--accent);display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:14px;box-shadow:var(--glow);transition:all 0.2s;flex-shrink:0;}
+#user-icon:hover{box-shadow:var(--glow2);}
+.cpill{display:flex;align-items:center;gap:4px;border-radius:20px;padding:4px 9px;cursor:pointer;transition:all 0.2s;white-space:nowrap;}
+.cpill-coin{background:var(--bg-card2);border:1px solid var(--gold);box-shadow:0 0 8px rgba(255,214,0,0.12);}
+.cpill-coin:hover{box-shadow:0 0 16px rgba(255,214,0,0.28);}
+.cpill-ruby{background:var(--bg-card2);border:1px solid var(--ruby);box-shadow:0 0 8px var(--ruby-glow);}
+.cpill-ruby:hover{box-shadow:0 0 16px rgba(255,45,85,0.35);}
+.picon{font-size:12px;}
+.pcount{font-family:var(--font-hud);font-size:10px;font-weight:700;min-width:28px;}
+#coin-count{color:var(--gold);}
+#ruby-count{color:var(--ruby);}
+/* PAGES */
+.page{display:none;padding:20px 16px;max-width:860px;margin:0 auto;width:100%;animation:fadeIn 0.2s ease;}
+.page.active{display:block;}
+@keyframes fadeIn{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:translateY(0)}}
+@keyframes slideDown{from{opacity:0;transform:translateY(-8px)}to{opacity:1;transform:translateY(0)}}
+@keyframes floatUp{from{opacity:1;transform:translateY(0)}to{opacity:0;transform:translateY(-60px)}}
+/* CARDS */
+.card{background:var(--bg-card);border:1px solid var(--border);border-radius:var(--radius-lg);padding:16px;margin-bottom:13px;position:relative;overflow:visible;}
+.card::before{content:'';position:absolute;top:0;left:0;right:0;height:1px;background:linear-gradient(90deg,transparent,var(--accent),transparent);opacity:0.4;border-radius:var(--radius-lg) var(--radius-lg) 0 0;}
+.card-title{font-family:var(--font-hud);font-size:9px;letter-spacing:3px;color:var(--accent);text-transform:uppercase;margin-bottom:13px;}
+/* INPUTS */
+.input-row{display:flex;gap:8px;margin-bottom:10px;align-items:center;}
+.hud-input{background:var(--bg-deep);border:1px solid var(--border2);border-radius:var(--radius);color:var(--text);font-family:var(--font-body);font-size:15px;padding:9px 12px;outline:none;transition:all 0.2s;width:100%;}
+.hud-input:focus{border-color:var(--accent);box-shadow:0 0 0 2px rgba(0,229,255,0.15);}
+.hud-input::placeholder{color:var(--text-dim);}
+/* AUTOCOMPLETE */
+.ac-wrap{position:relative;flex:1;}
+.ac-drop{display:none;position:absolute;top:100%;left:0;right:0;z-index:500;background:var(--bg-card);border:1px solid var(--accent);border-top:none;border-radius:0 0 var(--radius) var(--radius);max-height:200px;overflow-y:auto;}
+.ac-drop.open{display:block;}
+.ac-item{display:flex;justify-content:space-between;align-items:center;padding:8px 13px;cursor:pointer;transition:background 0.1s;font-size:14px;}
+.ac-item:hover,.ac-item.hi{background:rgba(0,229,255,0.1);}
+.ac-name{color:var(--text);}
+.ac-cal{font-family:var(--font-mono);font-size:11px;color:var(--accent);}
+/* BUTTONS */
+.btn{font-family:var(--font-hud);font-size:9px;letter-spacing:1.5px;text-transform:uppercase;padding:9px 15px;border-radius:var(--radius);border:1px solid;cursor:pointer;transition:all 0.2s;white-space:nowrap;}
+.btn-primary{background:rgba(0,229,255,0.1);border-color:var(--accent);color:var(--accent);}
+.btn-primary:hover:not(:disabled){background:rgba(0,229,255,0.2);box-shadow:var(--glow);}
+.btn-danger{background:rgba(255,64,129,0.1);border-color:var(--accent2);color:var(--accent2);}
+.btn-danger:hover{background:rgba(255,64,129,0.2);}
+.btn-gold{background:rgba(255,214,0,0.1);border-color:var(--gold);color:var(--gold);}
+.btn-gold:hover:not(:disabled){background:rgba(255,214,0,0.2);box-shadow:0 0 20px rgba(255,214,0,0.3);}
+.btn-gold:disabled{opacity:0.35;cursor:not-allowed;}
+.btn-success{background:rgba(118,255,3,0.1);border-color:var(--success);color:var(--success);}
+.btn-success:hover:not(:disabled){background:rgba(118,255,3,0.2);box-shadow:0 0 16px rgba(118,255,3,0.2);}
+.btn-sm{padding:5px 10px;font-size:8px;}
+.btn-full{width:100%;text-align:center;}
+/* PROGRESS */
+.progress-wrap{background:rgba(255,255,255,0.06);border-radius:4px;height:8px;overflow:hidden;margin:7px 0;}
+.progress-fill{height:100%;border-radius:4px;transition:width 0.5s ease;background:linear-gradient(90deg,var(--accent),var(--accent2));box-shadow:0 0 8px rgba(0,229,255,0.5);}
+.progress-fill.over{background:linear-gradient(90deg,var(--accent2),#ff0000);}
+/* STATS */
+.stats-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(115px,1fr));gap:9px;margin-bottom:13px;}
+.stat-box{background:var(--bg-card2);border:1px solid var(--border);border-radius:var(--radius);padding:10px 11px;text-align:center;}
+.stat-label{font-family:var(--font-hud);font-size:7px;letter-spacing:2px;color:var(--text-muted);text-transform:uppercase;margin-bottom:5px;}
+.stat-val{font-family:var(--font-hud);font-size:19px;font-weight:700;}
+.stat-val.cyan{color:var(--accent);text-shadow:0 0 8px rgba(0,229,255,0.4);}
+.stat-val.green{color:var(--success);text-shadow:0 0 8px rgba(118,255,3,0.4);}
+.stat-val.gold{color:var(--gold);}
+/* LOG */
+.log-list{list-style:none;}
+.log-item{display:flex;align-items:center;gap:8px;padding:8px 11px;background:var(--bg-card2);border:1px solid var(--border);border-radius:var(--radius);margin-bottom:6px;animation:slideDown 0.2s ease;font-size:14px;}
+.log-item .log-name{flex:1;color:var(--text);}
+.log-item .log-cal{font-family:var(--font-mono);font-size:12px;color:var(--accent);min-width:52px;text-align:right;}
+.log-item .log-time{font-size:10px;color:var(--text-dim);min-width:42px;}
+.log-del{background:none;border:none;color:var(--text-dim);cursor:pointer;font-size:14px;padding:2px 4px;border-radius:4px;transition:all 0.15s;}
+.log-del:hover{color:var(--accent2);background:rgba(255,64,129,0.1);}
+/* SECTION */
+.section-header{font-family:var(--font-hud);font-size:9px;letter-spacing:3px;color:var(--text-muted);text-transform:uppercase;margin:16px 0 10px;display:flex;align-items:center;gap:10px;}
+.section-header::after{content:'';flex:1;height:1px;background:var(--border);}
+/* MODAL */
+#modal-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.78);z-index:1000;align-items:center;justify-content:center;backdrop-filter:blur(4px);}
+#modal-overlay.show{display:flex;}
+#modal-box{background:var(--bg-card);border:1px solid var(--accent);border-radius:var(--radius-lg);padding:24px 26px;max-width:380px;width:92%;text-align:center;box-shadow:var(--glow2);animation:fadeIn 0.15s ease;}
+#modal-title{font-family:var(--font-hud);font-size:11px;letter-spacing:3px;color:var(--accent);text-transform:uppercase;margin-bottom:10px;}
+#modal-body{font-size:14px;color:var(--text);margin-bottom:20px;line-height:1.65;text-align:left;}
+.modal-actions{display:flex;gap:10px;justify-content:center;flex-wrap:wrap;}
+/* TOAST */
+#toast{position:fixed;bottom:22px;left:50%;transform:translateX(-50%) translateY(80px);background:var(--bg-card2);border:1px solid var(--border2);border-radius:24px;padding:8px 18px;font-family:var(--font-hud);font-size:10px;letter-spacing:1px;color:var(--accent);z-index:2000;transition:transform 0.3s ease;pointer-events:none;box-shadow:var(--glow);white-space:nowrap;}
+#toast.show{transform:translateX(-50%) translateY(0);}
+#toast.gold{border-color:var(--gold);color:var(--gold);}
+#toast.green{border-color:var(--success);color:var(--success);}
+#toast.red{border-color:var(--accent2);color:var(--accent2);}
+#toast.ruby{border-color:var(--ruby);color:var(--ruby);box-shadow:0 0 18px var(--ruby-glow);}
+/* SHOP */
+.shop-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(145px,1fr));gap:11px;}
+.shop-item{background:var(--bg-card2);border:1px solid var(--border);border-radius:var(--radius-lg);padding:13px;text-align:center;cursor:pointer;transition:all 0.2s;position:relative;overflow:hidden;}
+.shop-item:hover:not(.owned):not(.equipped){border-color:var(--border2);transform:translateY(-2px);}
+.shop-item.owned{border-color:var(--success);}
+.shop-item.equipped{border-color:var(--gold);box-shadow:0 0 12px rgba(255,214,0,0.2);}
+.item-preview{font-size:26px;margin-bottom:7px;height:42px;display:flex;align-items:center;justify-content:center;border-radius:8px;}
+.item-name{font-family:var(--font-hud);font-size:8px;letter-spacing:2px;text-transform:uppercase;margin-bottom:4px;}
+.item-price{font-family:var(--font-mono);font-size:11px;}
+.item-price-ruby{color:var(--ruby);}
+.item-price.owned-label{color:var(--success);font-size:9px;}
+.item-price.equipped-label{color:var(--gold);font-size:9px;}
+.tier-badge{position:absolute;top:6px;right:6px;font-family:var(--font-hud);font-size:6px;letter-spacing:1px;padding:2px 5px;border-radius:4px;text-transform:uppercase;}
+.tier-common{background:rgba(122,122,122,0.3);color:#aaa;border:1px solid #555;}
+.tier-rare{background:rgba(0,100,255,0.2);color:#66aaff;border:1px solid #336;}
+.tier-epic{background:rgba(170,0,255,0.2);color:var(--purple);border:1px solid #440066;}
+.tier-legendary{background:rgba(255,214,0,0.2);color:var(--gold);border:1px solid #664400;}
+/* SUPPLEMENTS */
+.supp-item{display:flex;align-items:center;gap:9px;padding:10px 13px;background:var(--bg-card2);border:1px solid var(--border);border-radius:var(--radius);margin-bottom:6px;transition:all 0.2s;}
+.supp-item.checked{border-color:rgba(118,255,3,0.35);background:rgba(118,255,3,0.04);}
+.supp-check{width:20px;height:20px;border:2px solid var(--border2);border-radius:5px;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all 0.2s;flex-shrink:0;font-size:11px;}
+.supp-check.on{background:var(--success);border-color:var(--success);color:#000;}
+.supp-name{flex:1;font-size:14px;font-weight:600;}
+.supp-dose{font-size:12px;color:var(--text-muted);}
+.supp-ts{font-size:10px;color:var(--success);font-family:var(--font-mono);min-width:110px;text-align:right;}
+.supp-del{background:none;border:none;color:var(--text-dim);cursor:pointer;font-size:13px;padding:2px 4px;border-radius:4px;transition:all 0.15s;}
+.supp-del:hover{color:var(--accent2);}
+/* WEIGHT CHART */
+#weight-chart-wrap{position:relative;height:220px;}
+/* HISTORY */
+.hist-day{background:var(--bg-card2);border:1px solid var(--border);border-radius:var(--radius-lg);margin-bottom:9px;overflow:hidden;}
+.hist-day-header{padding:10px 13px;display:flex;align-items:center;justify-content:space-between;cursor:pointer;user-select:none;transition:background 0.15s;}
+.hist-day-header:hover{background:rgba(255,255,255,0.03);}
+.hist-day-date{font-family:var(--font-hud);font-size:9px;letter-spacing:2px;color:var(--text-muted);}
+.hist-day-total{font-family:var(--font-mono);font-size:12px;color:var(--accent);}
+.hist-day-body{display:none;padding:0 13px 10px;border-top:1px solid var(--border);}
+.hist-day-body.open{display:block;animation:slideDown 0.15s ease;}
+.hist-entry{display:flex;justify-content:space-between;padding:5px 0;font-size:13px;border-bottom:1px solid rgba(255,255,255,0.04);}
+.hist-entry:last-child{border-bottom:none;}
+/* MENU */
+.menu-item{display:flex;align-items:center;gap:9px;padding:9px 13px;background:var(--bg-card2);border:1px solid var(--border);border-radius:var(--radius);margin-bottom:6px;font-size:14px;animation:slideDown 0.2s ease;}
+.menu-item .m-name{flex:1;color:var(--text);font-weight:600;}
+.menu-item .m-uses{font-size:10px;color:var(--text-dim);font-family:var(--font-mono);}
+.menu-item .m-cal{font-family:var(--font-mono);font-size:12px;color:var(--accent);}
+/* PAGE TITLES */
+.page-title{font-family:var(--font-hud);font-size:12px;letter-spacing:4px;text-transform:uppercase;color:var(--accent);text-shadow:0 0 12px rgba(0,229,255,0.4);margin-bottom:4px;}
+.page-subtitle{font-size:12px;color:var(--text-muted);margin-bottom:18px;}
+.bar-label{display:flex;justify-content:space-between;font-family:var(--font-mono);font-size:11px;color:var(--text-muted);margin-top:5px;}
+.streak-badge{display:inline-flex;align-items:center;gap:5px;background:rgba(255,45,85,0.1);border:1px solid var(--ruby);border-radius:20px;padding:4px 10px;font-family:var(--font-hud);font-size:8px;color:var(--ruby);letter-spacing:1px;}
+.settings-row{display:flex;align-items:center;gap:12px;margin-bottom:11px;flex-wrap:wrap;}
+.settings-label{font-family:var(--font-hud);font-size:8px;letter-spacing:2px;text-transform:uppercase;color:var(--text-muted);min-width:155px;}
+.coin-anim{position:fixed;pointer-events:none;z-index:9999;font-family:var(--font-hud);font-size:12px;animation:floatUp 1s ease forwards;}
+/* THEMES */
+body.theme-void{background:#000;}
+body.theme-forest{background:#030f07;--bg-card:#0a1f12;--bg-card2:#0d2516;--accent:#76ff03;--border:rgba(118,255,3,0.18);}
+body.theme-crimson{background:#0f0505;--bg-card:#1a0b0b;--bg-card2:#201010;--accent:#ff4444;--border:rgba(255,68,68,0.18);}
+body.theme-royal{background:#080510;--bg-card:#120d1e;--bg-card2:#160f24;--accent:#b388ff;--border:rgba(179,136,255,0.18);}
+body.theme-aurora{background:#04060f;}
+body.theme-solar{background:#0f0900;--bg-card:#1a1100;--bg-card2:#201500;--accent:#ffd600;--border:rgba(255,214,0,0.18);}
+body.theme-ice{background:#04080f;--accent:#80d8ff;--border:rgba(128,216,255,0.2);--bg-card:#0a1420;--bg-card2:#0d1a28;}
+body.theme-neon{background:#050010;--accent:#ff00ff;--accent2:#00ff88;--border:rgba(255,0,255,0.2);}
+body.theme-matrix{background:#000;--accent:#00ff41;--border:rgba(0,255,65,0.2);--bg-card:#001a00;--bg-card2:#002200;--text:#c8ffcc;}
+@media(max-width:600px){
+  .stats-grid{grid-template-columns:repeat(2,1fr);}
+  .shop-grid{grid-template-columns:repeat(2,1fr);}
+  #topbar-nav .nav-btn{font-size:7px;padding:4px 5px;}
+  .logo{font-size:12px;}
+  .cpill{padding:3px 7px;}
+  .pcount{font-size:9px;}
+}
+</style>
+</head>
+<body class="theme-default cursor-default" id="body">
+<div id="custom-cursor">🎯</div>
+<div id="app">
+
+<!-- TOPBAR -->
+<div id="topbar">
+  <div class="logo">Track<span>Dat</span>Azz</div>
+  <div id="topbar-nav">
+    <button class="nav-btn active" onclick="showPage('home')" id="nav-home">⚡ Track</button>
+    <button class="nav-btn" onclick="showPage('supplements')" id="nav-supplements">💊 Supps</button>
+    <button class="nav-btn" onclick="showPage('weight')" id="nav-weight">📈 Weight</button>
+    <button class="nav-btn" onclick="showPage('history')" id="nav-history">📋 History</button>
+    <button class="nav-btn" onclick="showPage('menu')" id="nav-menu">🍽 Menu</button>
+    <button class="nav-btn" onclick="showPage('shop')" id="nav-shop">🛒 Shop</button>
+    <button class="nav-btn" onclick="showPage('settings')" id="nav-settings">⚙ Settings</button>
+  </div>
+  <div id="topbar-right">
+    <div class="cpill cpill-coin" onclick="showPage('home')" title="Coins — use for +200 cal boosts">
+      <span class="picon">🪙</span><span class="pcount" id="coin-count">0</span>
+    </div>
+    <div class="cpill cpill-ruby" onclick="showPage('shop')" title="Rubies — spend in shop">
+      <span class="picon">💎</span><span class="pcount" id="ruby-count">0</span>
+    </div>
+    <div id="user-icon" onclick="showPage('shop')"><span id="user-icon-emoji">👤</span></div>
+  </div>
+</div>
+
+<!-- HOME -->
+<div class="page active" id="page-home">
+  <div class="page-title">Daily Tracker</div>
+  <div class="page-subtitle">Log calories · Submit end of day · Earn 🪙 coins and 💎 rubies</div>
+  <div class="stats-grid">
+    <div class="stat-box"><div class="stat-label">Consumed</div><div class="stat-val cyan" id="stat-consumed">0</div></div>
+    <div class="stat-box"><div class="stat-label">Daily Goal</div><div class="stat-val gold" id="stat-goal">—</div></div>
+    <div class="stat-box"><div class="stat-label">Remaining</div><div class="stat-val green" id="stat-remaining">—</div></div>
+    <div class="stat-box"><div class="stat-label">Maintenance</div><div class="stat-val" style="color:var(--text-muted);font-size:16px;" id="stat-maintenance">—</div></div>
+  </div>
+  <div class="card">
+    <div class="card-title">Goal Progress</div>
+    <div class="progress-wrap"><div class="progress-fill" id="progress-bar" style="width:0%"></div></div>
+    <div class="bar-label"><span id="prog-left">0 cal</span><span id="prog-right">Goal: — cal</span></div>
+    <div style="margin-top:13px;display:flex;align-items:center;gap:10px;flex-wrap:wrap;">
+      <button class="btn btn-gold" id="btn-boost" onclick="tryBoost()" disabled>🍔 +200 CAL BOOST (1000 🪙)</button>
+      <span style="font-size:11px;color:var(--text-dim);font-family:var(--font-mono);" id="boost-hint">Need 1000 coins</span>
+    </div>
+  </div>
+  <div class="card" style="overflow:visible;">
+    <div class="card-title">Log Entry</div>
+    <div class="input-row">
+      <div class="ac-wrap">
+        <input class="hud-input" id="inp-food" type="text" placeholder="What did you eat?" autocomplete="off">
+        <div class="ac-drop" id="ac-drop"></div>
+      </div>
+      <input class="hud-input" id="inp-cal" type="number" placeholder="Calories" min="0" style="max-width:120px;flex:0;">
+      <button class="btn btn-primary" onclick="addEntry()">ADD</button>
+    </div>
+    <div style="font-size:10px;color:var(--text-dim);font-family:var(--font-mono);">↑↓ or Tab to select from menu · Enter to add</div>
+  </div>
+  <div class="card">
+    <div class="card-title">Today's Log</div>
+    <ul class="log-list" id="log-list"></ul>
+    <div id="log-total-row" style="display:none;margin-top:8px;padding-top:8px;border-top:1px solid var(--border);display:flex;justify-content:space-between;">
+      <span style="font-family:var(--font-hud);font-size:8px;letter-spacing:2px;color:var(--text-muted);">TOTAL TODAY</span>
+      <span style="font-family:var(--font-mono);font-size:15px;color:var(--accent);" id="log-total">0 cal</span>
+    </div>
+  </div>
+  <div class="card" style="text-align:center;">
+    <div class="card-title">End of Day</div>
+    <div id="streak-info" style="margin-bottom:9px;"></div>
+    <p style="font-size:13px;color:var(--text-muted);margin-bottom:13px;">Submit today's log to earn 🪙 coins (deficit) and 💎 rubies (streak bonuses).</p>
+    <button class="btn btn-success btn-full" onclick="submitDay()" style="max-width:340px;">⚡ SUBMIT DAY &amp; CLAIM REWARDS</button>
+    <p style="font-size:10px;color:var(--text-dim);margin-top:8px;font-family:var(--font-mono);">Coins = maintenance − consumed · Rubies = consistency streaks</p>
+  </div>
+</div>
+
+<!-- MENU -->
+<div class="page" id="page-menu">
+  <div class="page-title">My Menu</div>
+  <div class="page-subtitle">Saved food/calorie combos. Auto-suggested while logging.</div>
+  <div class="card">
+    <div class="card-title">Add Menu Item</div>
+    <div class="input-row">
+      <input class="hud-input" id="menu-name-inp" type="text" placeholder="Food name" style="flex:1.5;">
+      <input class="hud-input" id="menu-cal-inp" type="number" placeholder="Calories" min="0" style="max-width:120px;flex:0;">
+      <button class="btn btn-primary" onclick="addMenuItem()">SAVE</button>
+    </div>
+  </div>
+  <div class="card">
+    <div class="card-title">Saved Items <span style="color:var(--text-dim);font-size:11px;" id="menu-count-lbl"></span></div>
+    <div id="menu-list"></div>
+  </div>
+</div>
+
+<!-- SUPPLEMENTS -->
+<div class="page" id="page-supplements">
+  <div class="page-title">Supplements</div>
+  <div class="page-subtitle">Daily supplement checklist with timestamps per check-in.</div>
+  <div class="card">
+    <div class="card-title">Add Supplement</div>
+    <div class="input-row">
+      <input class="hud-input" id="supp-name-inp" type="text" placeholder="Supplement name (e.g. Creatine)" style="flex:1.5;">
+      <input class="hud-input" id="supp-dose-inp" type="text" placeholder="Dose (e.g. 5g)" style="max-width:120px;flex:0;">
+      <button class="btn btn-primary" onclick="addSupplement()">ADD</button>
+    </div>
+  </div>
+  <div class="card">
+    <div class="card-title">Daily Checklist</div>
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;">
+      <span style="font-size:12px;color:var(--text-muted);" id="supp-progress-label">0 / 0 taken today</span>
+      <button class="btn btn-sm" style="border-color:var(--text-dim);color:var(--text-dim);" onclick="resetSuppChecks()">Reset All</button>
+    </div>
+    <div id="supp-list"></div>
+  </div>
+</div>
+
+<!-- WEIGHT -->
+<div class="page" id="page-weight">
+  <div class="page-title">Weight Tracker</div>
+  <div class="page-subtitle">Weekly weigh-ins. Lose weight → earn 💎 rubies.</div>
+  <div class="card">
+    <div class="card-title">Log Weigh-In</div>
+    <div class="input-row">
+      <input class="hud-input" id="weight-inp" type="number" placeholder="Weight (lbs)" step="0.1" style="flex:1;">
+      <input class="hud-input" id="weight-date-inp" type="date" style="flex:1;color:var(--text);">
+      <button class="btn btn-primary" onclick="addWeighIn()">LOG</button>
+    </div>
+  </div>
+  <div class="card">
+    <div class="card-title">Progress Chart</div>
+    <div id="weight-chart-wrap">
+      <canvas id="weight-canvas" style="display:none;"></canvas>
+      <div id="weight-chart-empty" style="height:220px;display:flex;align-items:center;justify-content:center;color:var(--text-dim);font-family:var(--font-mono);font-size:12px;">Log at least 2 weigh-ins to see chart</div>
+    </div>
+  </div>
+  <div class="card">
+    <div class="card-title">Weigh-In History</div>
+    <div id="weight-list"></div>
+  </div>
+</div>
+
+<!-- HISTORY -->
+<div class="page" id="page-history">
+  <div class="page-title">History</div>
+  <div class="page-subtitle">All past daily submissions with full calorie breakdown.</div>
+  <div id="history-list"></div>
+</div>
+
+<!-- SHOP -->
+<div class="page" id="page-shop">
+  <div class="page-title">Shop</div>
+  <div class="page-subtitle">Spend 💎 rubies to unlock cosmetics. Coins are only for cal boosts.</div>
+  <div class="section-header">Backgrounds</div>
+  <div class="shop-grid" id="shop-bg"></div>
+  <div class="section-header">User Icons</div>
+  <div class="shop-grid" id="shop-icons"></div>
+  <div class="section-header">Cursors</div>
+  <div class="shop-grid" id="shop-cursors"></div>
+  <div style="margin-top:16px;padding:13px;background:var(--bg-card2);border:1px solid rgba(255,45,85,0.2);border-radius:var(--radius);font-size:12px;color:var(--text-muted);font-family:var(--font-mono);line-height:1.9;">
+    💎 10 rubies per deficit day submitted · +5 per streak day (cumulative) · 25 for losing weight<br>
+    🪙 Coins = 1 per calorie deficit · Only used for +200 cal boosts (1000 coins each)
+  </div>
+</div>
+
+<!-- SETTINGS -->
+<div class="page" id="page-settings">
+  <div class="page-title">Settings</div>
+  <div class="page-subtitle">Configure your calorie targets.</div>
+  <div class="card">
+    <div class="card-title">Calorie Targets</div>
+    <div class="settings-row">
+      <span class="settings-label">Maintenance Calories</span>
+      <input class="hud-input" id="set-maintenance" type="number" placeholder="e.g. 2500" style="max-width:155px;">
+    </div>
+    <div class="settings-row">
+      <span class="settings-label">Daily Goal Calories</span>
+      <input class="hud-input" id="set-goal" type="number" placeholder="e.g. 2000" style="max-width:155px;">
+    </div>
+    <button class="btn btn-primary" onclick="saveSettings()" style="margin-top:6px;">SAVE SETTINGS</button>
+  </div>
+  <div class="card">
+    <div class="card-title">Economy Guide</div>
+    <div style="font-size:13px;color:var(--text-muted);line-height:2;font-family:var(--font-mono);">
+      🪙 <b style="color:var(--gold);">Coins</b> — 1 per calorie deficit on submit<br>
+      🪙 Spend 1000 coins = +200 temporary calorie boost<br>
+      💎 <b style="color:var(--ruby);">Rubies</b> — earned via consistency &amp; weight loss<br>
+      💎 10 rubies per deficit day · +5 bonus per streak day<br>
+      💎 25 rubies when you lose weight vs last weigh-in<br>
+      💎 Spend rubies in Shop for permanent cosmetics
+    </div>
+  </div>
+  <div class="card">
+    <div class="card-title">Data Management</div>
+    <div style="display:flex;gap:10px;flex-wrap:wrap;">
+      <button class="btn btn-danger" onclick="confirmClearToday()">Clear Today's Log</button>
+      <button class="btn btn-danger" onclick="confirmClearAll()">Reset All Data</button>
+    </div>
+    <p style="font-size:11px;color:var(--text-dim);margin-top:10px;font-family:var(--font-mono);">All data stored locally in your browser.</p>
+  </div>
+</div>
+
+</div><!-- /app -->
+
+<div id="modal-overlay">
+  <div id="modal-box">
+    <div id="modal-title">CONFIRM</div>
+    <div id="modal-body"></div>
+    <div class="modal-actions">
+      <button class="btn btn-primary" id="modal-confirm">✓ CONFIRM</button>
+      <button class="btn btn-danger" onclick="closeModal()">✗ CANCEL</button>
+    </div>
+  </div>
+</div>
+<div id="toast"></div>
+
+<script>
+// ===================== STATE =====================
+let state = {
+  maintenance:0, dailyGoal:0, extraCalories:0,
+  coins:0, rubies:0, streak:0, lastSubmitDate:'',
+  todayLog:[], history:[], supplements:[], suppChecks:{},
+  weighIns:[], menuItems:[],
+  owned:{bg:['theme-default'],icons:['👤'],cursors:['cursor-default']},
+  equipped:{bg:'theme-default',icon:'👤',cursor:'cursor-default'},
+};
+function load(){
+  const s=localStorage.getItem('tda_state');
+  if(s){try{state=Object.assign({},state,JSON.parse(s));}catch(e){}}
+  if(!state.menuItems)state.menuItems=[];
+  if(!state.owned)state.owned={bg:['theme-default'],icons:['👤'],cursors:['cursor-default']};
+  if(!state.equipped)state.equipped={bg:'theme-default',icon:'👤',cursor:'cursor-default'};
+  if(typeof state.rubies==='undefined')state.rubies=0;
+  if(typeof state.streak==='undefined')state.streak=0;
+  if(!state.lastSubmitDate)state.lastSubmitDate='';
+  if(!state.suppChecks)state.suppChecks={};
+}
+function save(){localStorage.setItem('tda_state',JSON.stringify(state));}
+
+// ===================== NAV =====================
+function showPage(id){
+  document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+  document.querySelectorAll('.nav-btn').forEach(b=>b.classList.remove('active'));
+  document.getElementById('page-'+id).classList.add('active');
+  document.getElementById('nav-'+id).classList.add('active');
+  closeAcDrop();
+  if(id==='home')renderHome();
+  if(id==='menu')renderMenu();
+  if(id==='supplements')renderSupplements();
+  if(id==='weight')renderWeight();
+  if(id==='history')renderHistory();
+  if(id==='shop')renderShop();
+  if(id==='settings')renderSettings();
+}
+
+// ===================== CURRENCY =====================
+function updateCurrencyUI(){
+  document.getElementById('coin-count').textContent=state.coins;
+  document.getElementById('ruby-count').textContent=state.rubies;
+}
+
+// ===================== HOME =====================
+function renderHome(){
+  const total=state.todayLog.reduce((s,e)=>s+e.cal,0);
+  const goal=(state.dailyGoal||0)+(state.extraCalories||0);
+  const remaining=goal-total;
+  document.getElementById('stat-consumed').textContent=total;
+  document.getElementById('stat-goal').textContent=goal||'—';
+  const remEl=document.getElementById('stat-remaining');
+  remEl.textContent=goal?remaining:'—';
+  remEl.style.color=remaining<0?'var(--accent2)':'var(--success)';
+  document.getElementById('stat-maintenance').textContent=state.maintenance||'—';
+  document.getElementById('prog-left').textContent=total+' cal';
+  document.getElementById('prog-right').textContent='Goal: '+(goal||'—')+' cal';
+  const pct=goal?Math.min((total/goal)*100,100):0;
+  const bar=document.getElementById('progress-bar');
+  bar.style.width=pct+'%';
+  bar.className='progress-fill'+(total>goal?' over':'');
+  // boost button
+  const canBoost=state.coins>=1000;
+  document.getElementById('btn-boost').disabled=!canBoost;
+  document.getElementById('boost-hint').textContent=canBoost?`You have ${state.coins} coins`:`Need 1000 coins (have ${state.coins})`;
+  // streak badge
+  const streakEl=document.getElementById('streak-info');
+  if(state.streak>1){
+    const bonus=5*state.streak;
+    streakEl.innerHTML=`<span class="streak-badge">🔥 ${state.streak}-day streak! +${bonus} bonus rubies on next submit</span>`;
+  } else { streakEl.innerHTML=''; }
+  // log list
+  const list=document.getElementById('log-list');
+  const totalRow=document.getElementById('log-total-row');
+  list.innerHTML='';
+  if(state.todayLog.length===0){
+    const li=document.createElement('li');
+    li.style.cssText='color:var(--text-dim);font-size:13px;padding:12px;text-align:center;font-family:var(--font-mono);';
+    li.textContent='No entries yet. Start logging!';
+    list.appendChild(li);
+    totalRow.style.display='none';
+  } else {
+    state.todayLog.forEach((e,i)=>{
+      const li=document.createElement('li');
+      li.className='log-item';
+      li.innerHTML=`<span class="log-name">${esc(e.name)}</span><span class="log-time">${e.time}</span><span class="log-cal">${e.cal} cal</span><button class="log-del" onclick="deleteEntry(${i})">✕</button>`;
+      list.appendChild(li);
+    });
+    totalRow.style.display='flex';
+    document.getElementById('log-total').textContent=total+' cal';
+  }
+  updateCurrencyUI();
+}
+
+function addEntry(){
+  const nameEl=document.getElementById('inp-food');
+  const calEl=document.getElementById('inp-cal');
+  const name=nameEl.value.trim();
+  const cal=parseInt(calEl.value);
+  if(!name||isNaN(cal)||cal<0){showToast('Fill in food name and calories!','red');return;}
+  const now=new Date();
+  state.todayLog.push({name,cal,time:now.toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'})});
+  saveToMenu(name,cal);
+  nameEl.value=''; calEl.value='';
+  closeAcDrop(); nameEl.focus();
+  save(); renderHome();
+  showToast(`+${cal} cal logged ✓`,'green');
+}
+
+function deleteEntry(i){
+  state.todayLog.splice(i,1);
+  save(); renderHome();
+}
+
+function tryBoost(){
+  if(state.coins<1000){showToast('Not enough coins!','red');return;}
+  openModal('CALORIE BOOST','Add +200 calories to today\'s daily goal?\nThis costs 1000 🪙 coins.',()=>{
+    state.coins-=1000;
+    state.extraCalories=(state.extraCalories||0)+200;
+    save(); renderHome();
+    showToast('+200 calories added to goal! 🍔','gold');
+    floatAnim('🪙',-1000,'var(--gold)');
+  });
+}
+
+function todayDate(){return new Date().toISOString().slice(0,10);}
+
+function submitDay(){
+  if(!state.maintenance){showToast('Set maintenance calories in Settings first!','red');return;}
+  if(state.todayLog.length===0){showToast('No entries to submit!','red');return;}
+  const total=state.todayLog.reduce((s,e)=>s+e.cal,0);
+  const deficit=state.maintenance-total;
+  const coinsEarned=Math.max(0,Math.round(deficit));
+  const isDeficit=deficit>0;
+  // ruby calc
+  let rubiesEarned=0;
+  const rubParts=[];
+  if(isDeficit){
+    rubiesEarned+=10; rubParts.push('10 base');
+  }
+  const today=todayDate();
+  const yesterday=new Date(Date.now()-86400000).toISOString().slice(0,10);
+  let newStreak=state.streak;
+  if(isDeficit){
+    if(state.lastSubmitDate===yesterday){newStreak=state.streak+1;}
+    else if(state.lastSubmitDate!==today){newStreak=1;}
+    if(newStreak>1){const b=5*newStreak;rubiesEarned+=b;rubParts.push(`+${b} streak ×${newStreak}`);}
+  } else {newStreak=0;}
+  const dateStr=new Date().toLocaleDateString('en-US',{weekday:'short',year:'numeric',month:'short',day:'numeric'});
+  const lines=[
+    `Today's intake: ${total} cal`,
+    `Maintenance: ${state.maintenance} cal`,
+    `Deficit: ${deficit>0?'+':''}${deficit} cal`,
+    '',
+    `🪙 Coins earned: ${coinsEarned}`,
+    `💎 Rubies earned: ${rubiesEarned}${rubParts.length?' ('+rubParts.join(', ')+')':''}`,
+    newStreak>1?`🔥 Streak: ${newStreak} days!`:'',
+  ].filter(Boolean);
+  openModal('SUBMIT DAY',lines.join('\n'),()=>{
+    state.coins+=coinsEarned;
+    state.rubies+=rubiesEarned;
+    state.streak=newStreak;
+    state.lastSubmitDate=today;
+    state.history.unshift({
+      dateKey:today, date:dateStr, entries:[...state.todayLog],
+      total, coinsEarned, rubiesEarned, maintenance:state.maintenance,
+      goal:(state.dailyGoal||0)+(state.extraCalories||0),
+    });
+    state.todayLog=[];
+    state.extraCalories=0;
+    save(); renderHome();
+    showToast(`+${coinsEarned}🪙 +${rubiesEarned}💎 Submitted! 💪`,'green');
+    if(coinsEarned>0)floatAnim('🪙',coinsEarned,'var(--gold)');
+    if(rubiesEarned>0)setTimeout(()=>floatAnim('💎',rubiesEarned,'var(--ruby)'),450);
+  });
+}
+
+// ===================== MENU + AUTOCOMPLETE =====================
+function saveToMenu(name,cal){
+  const key=name.toLowerCase();
+  const ex=state.menuItems.find(m=>m.name.toLowerCase()===key);
+  if(ex){ex.uses=(ex.uses||1)+1;ex.cal=cal;}
+  else{state.menuItems.push({id:Date.now(),name,cal,uses:1});}
+  state.menuItems.sort((a,b)=>(b.uses||0)-(a.uses||0));
+}
+
+function addMenuItem(){
+  const name=document.getElementById('menu-name-inp').value.trim();
+  const cal=parseInt(document.getElementById('menu-cal-inp').value);
+  if(!name||isNaN(cal)||cal<0){showToast('Enter name and calories!','red');return;}
+  const key=name.toLowerCase();
+  if(state.menuItems.find(m=>m.name.toLowerCase()===key)){showToast('Already in menu!','');return;}
+  state.menuItems.push({id:Date.now(),name,cal,uses:0});
+  document.getElementById('menu-name-inp').value='';
+  document.getElementById('menu-cal-inp').value='';
+  save(); renderMenu();
+  showToast(`"${name}" saved to menu ✓`,'green');
+}
+
+function deleteMenuItem(id){
+  state.menuItems=state.menuItems.filter(m=>m.id!==id);
+  save(); renderMenu();
+}
+
+function renderMenu(){
+  const list=document.getElementById('menu-list');
+  const lbl=document.getElementById('menu-count-lbl');
+  list.innerHTML='';
+  lbl.textContent=state.menuItems.length?`(${state.menuItems.length})`:'';
+  if(state.menuItems.length===0){
+    const d=document.createElement('div');
+    d.style.cssText='color:var(--text-dim);font-size:13px;padding:14px;text-align:center;font-family:var(--font-mono);';
+    d.textContent='No saved items yet. Items auto-save as you log food.';
+    list.appendChild(d); return;
+  }
+  state.menuItems.forEach(m=>{
+    const div=document.createElement('div');
+    div.className='menu-item';
+    div.innerHTML=`<span class="m-name">${esc(m.name)}</span><span class="m-uses">${m.uses||0}× used</span><span class="m-cal">${m.cal} cal</span><button class="log-del" onclick="deleteMenuItem(${m.id})">✕</button>`;
+    list.appendChild(div);
+  });
+}
+
+// autocomplete
+let acIdx=-1;
+function buildAcDrop(q){
+  const drop=document.getElementById('ac-drop');
+  if(!q){closeAcDrop();return;}
+  const lower=q.toLowerCase();
+  const matches=state.menuItems.filter(m=>m.name.toLowerCase().includes(lower)).slice(0,8);
+  if(!matches.length){closeAcDrop();return;}
+  drop.innerHTML='';
+  matches.forEach((m,i)=>{
+    const div=document.createElement('div');
+    div.className='ac-item'; div.dataset.idx=i;
+    div.innerHTML=`<span class="ac-name">${esc(m.name)}</span><span class="ac-cal">${m.cal} cal</span>`;
+    div.onmousedown=e=>{e.preventDefault();selectAcItem(m);};
+    drop.appendChild(div);
+  });
+  drop.classList.add('open');
+}
+function closeAcDrop(){document.getElementById('ac-drop').classList.remove('open');acIdx=-1;}
+function selectAcItem(m){
+  document.getElementById('inp-food').value=m.name;
+  document.getElementById('inp-cal').value=m.cal;
+  closeAcDrop();
+  document.getElementById('inp-cal').focus();
+}
+function getAcMatches(){
+  const q=document.getElementById('inp-food').value.toLowerCase();
+  return state.menuItems.filter(m=>m.name.toLowerCase().includes(q)).slice(0,8);
+}
+function highlightAc(){
+  document.querySelectorAll('.ac-item').forEach((el,i)=>{
+    el.classList.toggle('hi',i===acIdx);
+  });
+}
+
+document.getElementById('inp-food').addEventListener('input',function(){
+  acIdx=-1; buildAcDrop(this.value);
+});
+document.getElementById('inp-food').addEventListener('keydown',function(e){
+  const drop=document.getElementById('ac-drop');
+  const items=drop.querySelectorAll('.ac-item');
+  if((e.key==='ArrowDown'||(e.key==='Tab'&&drop.classList.contains('open')))&&items.length){
+    e.preventDefault(); acIdx=(acIdx+1)%items.length; highlightAc(); return;
+  }
+  if(e.key==='ArrowUp'&&items.length){
+    e.preventDefault(); acIdx=(acIdx-1+items.length)%items.length; highlightAc(); return;
+  }
+  if(e.key==='Enter'){
+    if(acIdx>=0&&items[acIdx]){
+      const m=getAcMatches()[acIdx]; if(m){e.preventDefault();selectAcItem(m);return;}
+    }
+    document.getElementById('inp-cal').focus();
+  }
+  if(e.key==='Escape')closeAcDrop();
+});
+document.getElementById('inp-food').addEventListener('blur',()=>setTimeout(closeAcDrop,160));
+
+// ===================== SUPPLEMENTS =====================
+function addSupplement(){
+  const name=document.getElementById('supp-name-inp').value.trim();
+  const dose=document.getElementById('supp-dose-inp').value.trim();
+  if(!name){showToast('Enter supplement name!','red');return;}
+  state.supplements.push({id:Date.now(),name,dose});
+  document.getElementById('supp-name-inp').value='';
+  document.getElementById('supp-dose-inp').value='';
+  save(); renderSupplements();
+}
+
+function renderSupplements(){
+  const list=document.getElementById('supp-list');
+  list.innerHTML='';
+  if(state.supplements.length===0){
+    const d=document.createElement('div');
+    d.style.cssText='color:var(--text-dim);font-size:13px;padding:14px;text-align:center;font-family:var(--font-mono);';
+    d.textContent='No supplements added yet.';
+    list.appendChild(d);
+    document.getElementById('supp-progress-label').textContent='0 / 0 taken today';
+    return;
+  }
+  const checked=state.supplements.filter(s=>state.suppChecks[s.id]).length;
+  document.getElementById('supp-progress-label').textContent=`${checked} / ${state.supplements.length} taken today`;
+  state.supplements.forEach(s=>{
+    const ts=state.suppChecks[s.id];
+    const on=!!ts;
+    const div=document.createElement('div');
+    div.className='supp-item'+(on?' checked':'');
+    div.innerHTML=`
+      <div class="supp-check ${on?'on':''}" onclick="toggleSupp(${s.id})">${on?'✓':''}</div>
+      <span class="supp-name">${esc(s.name)}</span>
+      <span class="supp-dose">${esc(s.dose)}</span>
+      <span class="supp-ts">${on?ts:''}</span>
+      <button class="supp-del" onclick="deleteSupp(${s.id})">✕</button>
+    `;
+    list.appendChild(div);
+  });
+}
+
+function toggleSupp(id){
+  if(state.suppChecks[id]){state.suppChecks[id]=false;}
+  else{const now=new Date();state.suppChecks[id]=now.toLocaleDateString([],{month:'short',day:'numeric'})+' · '+now.toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'});}
+  save(); renderSupplements();
+}
+function deleteSupp(id){
+  state.supplements=state.supplements.filter(s=>s.id!==id);
+  delete state.suppChecks[id];
+  save(); renderSupplements();
+}
+function resetSuppChecks(){state.suppChecks={};save();renderSupplements();showToast('Checks reset!');}
+
+// ===================== WEIGHT =====================
+function addWeighIn(){
+  const w=parseFloat(document.getElementById('weight-inp').value);
+  const d=document.getElementById('weight-date-inp').value;
+  if(isNaN(w)||!d){showToast('Enter weight and date!','red');return;}
+  const prevSorted=[...state.weighIns].sort((a,b)=>a.date.localeCompare(b.date));
+  const prev=prevSorted.length?prevSorted[prevSorted.length-1]:null;
+  const lostWeight=prev&&w<prev.weight;
+  state.weighIns=state.weighIns.filter(wi=>wi.date!==d);
+  state.weighIns.push({date:d,weight:w});
+  state.weighIns.sort((a,b)=>a.date.localeCompare(b.date));
+  document.getElementById('weight-inp').value='';
+  save(); renderWeight();
+  if(lostWeight){
+    const lost=(prev.weight-w).toFixed(1);
+    state.rubies+=25; save(); updateCurrencyUI();
+    showToast(`Lost ${lost} lbs! +25 💎 rubies earned! 🎉`,'ruby');
+    floatAnim('💎',25,'var(--ruby)');
+  } else {
+    showToast(`Weigh-in logged: ${w} lbs ✓`,'green');
+  }
+}
+
+function renderWeight(){
+  const list=document.getElementById('weight-list');
+  list.innerHTML='';
+  const sorted=[...state.weighIns].sort((a,b)=>b.date.localeCompare(a.date));
+  if(sorted.length===0){
+    const d=document.createElement('div');
+    d.style.cssText='color:var(--text-dim);font-size:13px;padding:14px;text-align:center;font-family:var(--font-mono);';
+    d.textContent='No weigh-ins yet.';
+    list.appendChild(d);
+  } else {
+    sorted.forEach((wi,i)=>{
+      const next=sorted[i+1];
+      const diff=next?(wi.weight-next.weight).toFixed(1):null;
+      const row=document.createElement('div');
+      row.style.cssText='display:flex;justify-content:space-between;align-items:center;padding:9px 12px;background:var(--bg-card2);border:1px solid var(--border);border-radius:8px;margin-bottom:6px;';
+      const diffHtml=diff!==null?`<span style="font-family:var(--font-mono);font-size:11px;color:${parseFloat(diff)<=0?'var(--success)':'var(--accent2)'};">${parseFloat(diff)>0?'+':''}${diff}</span>`:'';
+      row.innerHTML=`<span style="font-family:var(--font-mono);font-size:11px;color:var(--text-muted);">${wi.date}</span><div style="display:flex;align-items:center;gap:10px;">${diffHtml}<span style="font-family:var(--font-hud);font-size:15px;color:var(--accent);">${wi.weight} lbs</span><button class="log-del" onclick="deleteWeighIn('${wi.date}')">✕</button></div>`;
+      list.appendChild(row);
+    });
+  }
+  drawWeightChart();
+}
+
+function deleteWeighIn(date){
+  state.weighIns=state.weighIns.filter(wi=>wi.date!==date);
+  save(); renderWeight();
+}
+
+function drawWeightChart(){
+  const canvas=document.getElementById('weight-canvas');
+  const emptyEl=document.getElementById('weight-chart-empty');
+  const sorted=[...state.weighIns].sort((a,b)=>a.date.localeCompare(b.date));
+  if(sorted.length<2){emptyEl.style.display='flex';canvas.style.display='none';return;}
+  emptyEl.style.display='none'; canvas.style.display='block';
+  const wrap=document.getElementById('weight-chart-wrap');
+  canvas.width=wrap.clientWidth||600; canvas.height=220;
+  const ctx=canvas.getContext('2d');
+  const W=canvas.width,H=canvas.height;
+  const pad={t:20,r:20,b:38,l:48};
+  const cw=W-pad.l-pad.r,ch=H-pad.t-pad.b;
+  ctx.clearRect(0,0,W,H);
+  const weights=sorted.map(wi=>wi.weight);
+  const minW=Math.min(...weights)-2,maxW=Math.max(...weights)+2;
+  const toX=i=>pad.l+(i/(sorted.length-1))*cw;
+  const toY=w=>pad.t+ch-((w-minW)/(maxW-minW))*ch;
+  ctx.strokeStyle='rgba(0,229,255,0.07)';ctx.lineWidth=1;
+  for(let i=0;i<=4;i++){
+    const y=pad.t+(i/4)*ch;
+    ctx.beginPath();ctx.moveTo(pad.l,y);ctx.lineTo(pad.l+cw,y);ctx.stroke();
+    ctx.fillStyle='rgba(121,134,160,0.75)';ctx.font='10px Share Tech Mono,monospace';ctx.textAlign='right';
+    ctx.fillText((maxW-(i/4)*(maxW-minW)).toFixed(1),pad.l-5,y+4);
+  }
+  const grad=ctx.createLinearGradient(0,pad.t,0,pad.t+ch);
+  grad.addColorStop(0,'rgba(0,229,255,0.18)');grad.addColorStop(1,'rgba(0,229,255,0)');
+  ctx.beginPath();ctx.moveTo(toX(0),toY(sorted[0].weight));
+  sorted.forEach((wi,i)=>{if(i>0)ctx.lineTo(toX(i),toY(wi.weight));});
+  ctx.lineTo(toX(sorted.length-1),pad.t+ch);ctx.lineTo(toX(0),pad.t+ch);ctx.closePath();
+  ctx.fillStyle=grad;ctx.fill();
+  ctx.beginPath();ctx.strokeStyle='#00e5ff';ctx.lineWidth=2.5;ctx.lineJoin='round';
+  sorted.forEach((wi,i)=>{i===0?ctx.moveTo(toX(i),toY(wi.weight)):ctx.lineTo(toX(i),toY(wi.weight));});
+  ctx.stroke();
+  sorted.forEach((wi,i)=>{
+    ctx.beginPath();ctx.arc(toX(i),toY(wi.weight),4.5,0,Math.PI*2);
+    ctx.fillStyle='#00e5ff';ctx.fill();
+    ctx.strokeStyle='#0a0c10';ctx.lineWidth=2;ctx.stroke();
+    ctx.fillStyle='rgba(121,134,160,0.8)';ctx.font='9px Share Tech Mono,monospace';ctx.textAlign='center';
+    ctx.fillText(wi.date.slice(5),toX(i),H-10);
+  });
+}
+
+// ===================== HISTORY =====================
+function renderHistory(){
+  const container=document.getElementById('history-list');
+  container.innerHTML='';
+  if(state.history.length===0){
+    const d=document.createElement('div');
+    d.style.cssText='color:var(--text-dim);font-size:13px;padding:20px;text-align:center;font-family:var(--font-mono);';
+    d.textContent='No history yet. Submit a day to begin.';
+    container.appendChild(d); return;
+  }
+  state.history.forEach((day,di)=>{
+    const under=day.total<=(day.goal||day.maintenance||day.total+1);
+    const div=document.createElement('div');
+    div.className='hist-day';
+    div.innerHTML=`
+      <div class="hist-day-header" onclick="toggleHistDay(${di})">
+        <div>
+          <div class="hist-day-date">${day.date}</div>
+          <div style="font-size:11px;color:${under?'var(--success)':'var(--accent2)'};font-family:var(--font-mono);margin-top:2px;">
+            ${under?'✓ Under goal':'⚠ Over goal'} · +${day.coinsEarned||0}🪙 +${day.rubiesEarned||0}💎
+          </div>
+        </div>
+        <div class="hist-day-total">${day.total} / ${day.goal||'?'} cal ▾</div>
+      </div>
+      <div class="hist-day-body" id="hist-body-${di}">
+        ${day.entries.map(e=>`<div class="hist-entry"><span>${esc(e.name)}</span><span style="font-family:var(--font-mono);color:var(--accent);">${e.cal} cal</span></div>`).join('')}
+        <div style="display:flex;justify-content:space-between;margin-top:7px;padding-top:7px;border-top:1px solid var(--border);">
+          <span style="font-family:var(--font-hud);font-size:8px;letter-spacing:2px;color:var(--text-muted);">MAINTENANCE</span>
+          <span style="font-family:var(--font-mono);color:var(--text-muted);">${day.maintenance} cal</span>
+        </div>
+      </div>
+    `;
+    container.appendChild(div);
+  });
+}
+function toggleHistDay(i){document.getElementById('hist-body-'+i).classList.toggle('open');}
+
+// ===================== SHOP =====================
+const SHOP_BG=[
+  {id:'theme-default',name:'Default', color:'#0a0c10',price:0,   tier:'common',   preview:'🌑'},
+  {id:'theme-void',   name:'Void',    color:'#000',   price:150, tier:'common',   preview:'⬛'},
+  {id:'theme-crimson',name:'Crimson', color:'#0f0505',price:400, tier:'rare',     preview:'🔴'},
+  {id:'theme-forest', name:'Forest',  color:'#030f07',price:400, tier:'rare',     preview:'🌿'},
+  {id:'theme-royal',  name:'Royal',   color:'#080510',price:700, tier:'epic',     preview:'💜'},
+  {id:'theme-aurora', name:'Aurora',  color:'#04060f',price:900, tier:'epic',     preview:'🌌'},
+  {id:'theme-solar',  name:'Solar',   color:'#0f0900',price:1100,tier:'epic',     preview:'☀️'},
+  {id:'theme-ice',    name:'Ice',     color:'#04080f',price:1100,tier:'epic',     preview:'❄️'},
+  {id:'theme-neon',   name:'Neon',    color:'#050010',price:2500,tier:'legendary',preview:'🌈'},
+  {id:'theme-matrix', name:'Matrix',  color:'#000',   price:4000,tier:'legendary',preview:'🟩'},
+];
+const SHOP_ICONS=[
+  {id:'👤',name:'Default', price:0,   tier:'common'},
+  {id:'💀',name:'Skull',   price:250, tier:'rare'},
+  {id:'⚡',name:'Voltage', price:400, tier:'rare'},
+  {id:'🔥',name:'Blaze',   price:700, tier:'epic'},
+  {id:'👑',name:'Crown',   price:1200,tier:'epic'},
+  {id:'🤖',name:'Bot',     price:900, tier:'epic'},
+  {id:'💎',name:'Crystal', price:2500,tier:'legendary'},
+  {id:'🐲',name:'Dragon',  price:4000,tier:'legendary'},
+];
+const SHOP_CURSORS=[
+  {id:'cursor-default',     name:'Default',   price:0,   tier:'common',preview:'↖'},
+  {id:'cursor-crosshair',   name:'Crosshair', price:300, tier:'rare',  preview:'✛'},
+  {id:'cursor-pointer-lock',name:'Target',    price:1000,tier:'epic',  preview:'🎯'},
+];
+
+function renderShop(){
+  renderShopSection('shop-bg',SHOP_BG,'bg');
+  renderShopSection('shop-icons',SHOP_ICONS,'icon');
+  renderShopSection('shop-cursors',SHOP_CURSORS,'cursor');
+  updateCurrencyUI();
+}
+
+function renderShopSection(cid,items,type){
+  const container=document.getElementById(cid);
+  container.innerHTML='';
+  const ownKey=type==='bg'?'bg':type==='icon'?'icons':'cursors';
+  const eqKey=type==='bg'?'bg':type==='icon'?'icon':'cursor';
+  items.forEach(item=>{
+    const owned=state.owned[ownKey].includes(item.id);
+    const equipped=state.equipped[eqKey]===item.id;
+    const div=document.createElement('div');
+    div.className='shop-item'+(equipped?' equipped':owned?' owned':'');
+    let preview='';
+    if(type==='bg')preview=`<div class="item-preview" style="background:${item.color};">${item.preview}</div>`;
+    else if(type==='icon')preview=`<div class="item-preview" style="background:var(--bg-deep);">${item.id}</div>`;
+    else preview=`<div class="item-preview" style="background:var(--bg-deep);font-size:20px;">${item.preview}</div>`;
+    let priceHtml='';
+    if(equipped)priceHtml=`<div class="item-price equipped-label">EQUIPPED</div>`;
+    else if(owned)priceHtml=`<div class="item-price owned-label">OWNED — EQUIP</div>`;
+    else priceHtml=`<div class="item-price item-price-ruby">${item.price===0?'FREE':item.price+' 💎'}</div>`;
+    div.innerHTML=`<span class="tier-badge tier-${item.tier}">${item.tier}</span>${preview}<div class="item-name">${item.name}</div>${priceHtml}`;
+    div.onclick=()=>shopBuy(item,type,owned,equipped,ownKey,eqKey);
+    container.appendChild(div);
+  });
+}
+
+function shopBuy(item,type,owned,equipped,ownKey,eqKey){
+  if(equipped)return;
+  if(owned){
+    state.equipped[eqKey]=item.id;
+    applyEquipped();save();renderShop();
+    showToast(`${item.name} equipped!`,'gold');return;
+  }
+  if(item.price===0){
+    state.owned[ownKey].push(item.id);state.equipped[eqKey]=item.id;
+    applyEquipped();save();renderShop();return;
+  }
+  if(state.rubies<item.price){showToast(`Not enough rubies! Need ${item.price} 💎 (have ${state.rubies})`,'red');return;}
+  openModal('PURCHASE',`Buy "${item.name}" for ${item.price} 💎 rubies?\n\nThis is a permanent unlock.`,()=>{
+    state.rubies-=item.price;
+    state.owned[ownKey].push(item.id);state.equipped[eqKey]=item.id;
+    applyEquipped();save();renderShop();updateCurrencyUI();
+    showToast(`${item.name} unlocked & equipped! ✨`,'ruby');
+    floatAnim('💎',-item.price,'var(--ruby)');
+  });
+}
+
+function applyEquipped(){
+  const body=document.getElementById('body');
+  body.className=body.className.replace(/theme-\S+/g,'').replace(/cursor-\S+/g,'').trim();
+  body.classList.add(state.equipped.bg||'theme-default');
+  body.classList.add(state.equipped.cursor||'cursor-default');
+  document.getElementById('user-icon-emoji').textContent=state.equipped.icon||'👤';
+  updateCurrencyUI();
+}
+
+// ===================== SETTINGS =====================
+function renderSettings(){
+  document.getElementById('set-maintenance').value=state.maintenance||'';
+  document.getElementById('set-goal').value=state.dailyGoal||'';
+}
+function saveSettings(){
+  const m=parseInt(document.getElementById('set-maintenance').value);
+  const g=parseInt(document.getElementById('set-goal').value);
+  if(isNaN(m)||isNaN(g)||m<=0||g<=0){showToast('Enter valid positive numbers!','red');return;}
+  state.maintenance=m;state.dailyGoal=g;save();showToast('Settings saved! ✓','green');
+}
+function confirmClearToday(){
+  openModal('CLEAR TODAY','Delete all of today\'s log entries?\nThis cannot be undone.',()=>{
+    state.todayLog=[];state.extraCalories=0;save();showToast('Today\'s log cleared.');
+  });
+}
+function confirmClearAll(){
+  openModal('RESET ALL DATA','⚠️ This will delete ALL data including history, coins, rubies, shop unlocks, supplements, and weight logs.\n\nAre you absolutely sure?',()=>{
+    localStorage.removeItem('tda_state');location.reload();
+  });
+}
+
+// ===================== MODAL =====================
+let modalCb=null;
+function openModal(title,body,onConfirm){
+  document.getElementById('modal-title').textContent=title;
+  document.getElementById('modal-body').innerHTML=esc(body).replace(/\n/g,'<br>');
+  document.getElementById('modal-overlay').classList.add('show');
+  modalCb=onConfirm;
+}
+function closeModal(){document.getElementById('modal-overlay').classList.remove('show');modalCb=null;}
+document.getElementById('modal-confirm').onclick=()=>{closeModal();if(modalCb)modalCb();};
+document.getElementById('modal-overlay').onclick=e=>{if(e.target.id==='modal-overlay')closeModal();};
+
+// ===================== TOAST =====================
+let toastT;
+function showToast(msg,type=''){
+  const el=document.getElementById('toast');
+  el.textContent=msg;el.className='show'+(type?' '+type:'');
+  clearTimeout(toastT);
+  toastT=setTimeout(()=>{el.className='';},3200);
+}
+
+// ===================== FLOAT ANIMATION =====================
+function floatAnim(icon,delta,color){
+  const el=document.createElement('div');
+  el.className='coin-anim';
+  el.textContent=(delta>0?'+':'')+delta+' '+icon;
+  el.style.cssText=`left:${window.innerWidth-140}px;top:42px;color:${color};`;
+  document.body.appendChild(el);
+  setTimeout(()=>el.remove(),1000);
+}
+
+// ===================== KEYBOARD =====================
+document.getElementById('inp-cal').addEventListener('keydown',e=>{if(e.key==='Enter')addEntry();});
+document.getElementById('supp-name-inp').addEventListener('keydown',e=>{if(e.key==='Enter')document.getElementById('supp-dose-inp').focus();});
+document.getElementById('supp-dose-inp').addEventListener('keydown',e=>{if(e.key==='Enter')addSupplement();});
+document.getElementById('weight-inp').addEventListener('keydown',e=>{if(e.key==='Enter')addWeighIn();});
+document.getElementById('set-maintenance').addEventListener('keydown',e=>{if(e.key==='Enter')saveSettings();});
+document.getElementById('menu-name-inp').addEventListener('keydown',e=>{if(e.key==='Enter')document.getElementById('menu-cal-inp').focus();});
+document.getElementById('menu-cal-inp').addEventListener('keydown',e=>{if(e.key==='Enter')addMenuItem();});
+document.addEventListener('keydown',e=>{if(e.key==='Escape')closeModal();});
+document.addEventListener('mousemove',e=>{
+  const cur=document.getElementById('custom-cursor');
+  cur.style.left=e.clientX+'px';cur.style.top=e.clientY+'px';
+});
+
+// ===================== UTILS =====================
+function esc(s){return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');}
+
+// ===================== INIT =====================
+function init(){
+  load();
+  document.getElementById('weight-date-inp').value=new Date().toISOString().slice(0,10);
+  applyEquipped();
+  renderHome();
+  if(!state.maintenance)setTimeout(()=>showToast('👋 Welcome! Set calorie targets in Settings first.','gold'),700);
+}
+init();
+</script>
+</body>
+</html>
