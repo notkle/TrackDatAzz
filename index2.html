@@ -1,0 +1,347 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>TrackDatAzz v2</title>
+<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Rajdhani:wght@300;400;600;700&family=Share+Tech+Mono&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg-deep: #0a0c10;
+  --bg-mid: #111520;
+  --bg-card: #161b26;
+  --bg-card2: #1c2235;
+  --accent: #00e5ff;
+  --accent2: #ff4081;
+  --accent3: #76ff03;
+  --gold: #ffd600;
+  --ruby: #ff1744;
+  --purple: #b388ff;
+  --border: rgba(0,229,255,0.18);
+  --border2: rgba(0,229,255,0.35);
+  --text: #e8eaf6;
+  --text-muted: #7986a0;
+  --text-dim: #4a5568;
+  --success: #76ff03;
+  --danger: #ff4081;
+  --warn: #ffd600;
+  --font-hud: 'Orbitron', monospace;
+  --font-body: 'Rajdhani', sans-serif;
+  --font-mono: 'Share Tech Mono', monospace;
+  --glow: 0 0 20px rgba(0,229,255,0.25);
+  --glow2: 0 0 30px rgba(0,229,255,0.4);
+  --radius: 8px;
+  --radius-lg: 14px;
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+  background: var(--bg-deep);
+  color: var(--text);
+  font-family: var(--font-body);
+  font-size: 16px;
+  min-height: 100vh;
+  overflow-x: hidden;
+}
+
+body::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  background:
+    repeating-linear-gradient(0deg, transparent, transparent 39px, rgba(0,229,255,0.025) 39px, rgba(0,229,255,0.025) 40px),
+    repeating-linear-gradient(90deg, transparent, transparent 39px, rgba(0,229,255,0.025) 39px, rgba(0,229,255,0.025) 40px);
+  pointer-events: none;
+  z-index: 0;
+}
+
+/* ---- CUSTOM CURSORS ---- */
+body.cursor-default { cursor: default; }
+body.cursor-crosshair { cursor: crosshair; }
+body.cursor-pointer-lock { cursor: none; }
+#custom-cursor {
+  display: none;
+  position: fixed;
+  width: 24px; height: 24px;
+  pointer-events: none;
+  z-index: 99999;
+  transform: translate(-50%, -50%);
+}
+body.cursor-pointer-lock #custom-cursor { display: block; }
+
+/* ---- LAYOUT ---- */
+#app { position: relative; z-index: 1; min-height: 100vh; display: flex; flex-direction: column; }
+
+/* ---- TOPBAR ---- */
+#topbar {
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  background: rgba(10,12,16,0.92);
+  backdrop-filter: blur(12px);
+  border-bottom: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  padding: 0 20px;
+  height: 65px;
+  gap: 16px;
+}
+
+.logo {
+  font-family: var(--font-hud);
+  font-size: 18px;
+  font-weight: 900;
+  color: var(--accent);
+  text-shadow: 0 0 15px rgba(0,229,255,0.7);
+  letter-spacing: 2px;
+  flex-shrink: 0;
+}
+
+.logo span { color: var(--accent2); text-shadow: 0 0 15px rgba(255,64,129,0.7); }
+
+#topbar-nav {
+  display: flex;
+  gap: 4px;
+  flex: 1;
+  justify-content: center;
+  flex-wrap: wrap;
+}
+
+.nav-btn {
+  background: transparent;
+  border: 1px solid transparent;
+  color: var(--text-muted);
+  font-family: var(--font-hud);
+  font-size: 9px;
+  letter-spacing: 1.5px;
+  padding: 6px 10px;
+  border-radius: var(--radius);
+  cursor: pointer;
+  transition: all 0.2s;
+  text-transform: uppercase;
+}
+.nav-btn:hover { color: var(--accent); border-color: var(--border); }
+.nav-btn.active {
+  color: var(--accent);
+  border-color: var(--accent);
+  background: rgba(0,229,255,0.08);
+  box-shadow: var(--glow);
+}
+
+#topbar-right {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 4px;
+  flex-shrink: 0;
+}
+
+.currency-row { display: flex; gap: 8px; }
+
+.coins-display {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  background: var(--bg-card2);
+  border: 1px solid var(--gold);
+  border-radius: 20px;
+  padding: 2px 10px;
+  transition: all 0.2s;
+}
+.rubies-display {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  background: var(--bg-card2);
+  border: 1px solid var(--ruby);
+  border-radius: 20px;
+  padding: 2px 10px;
+  transition: all 0.2s;
+  cursor: pointer;
+}
+.rubies-display:hover { box-shadow: 0 0 15px rgba(255, 23, 68, 0.3); }
+
+#coin-count, #ruby-count {
+  font-family: var(--font-hud);
+  font-size: 11px;
+  font-weight: 700;
+}
+#coin-count { color: var(--gold); }
+#ruby-count { color: var(--ruby); }
+
+/* ---- PAGES ---- */
+.page { display: none; padding: 24px 20px; max-width: 860px; margin: 0 auto; width: 100%; animation: fadeIn 0.2s ease; }
+.page.active { display: block; }
+
+@keyframes fadeIn { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: translateY(0); } }
+
+/* ---- CARDS ---- */
+.card {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: 20px;
+  margin-bottom: 16px;
+  position: relative;
+  overflow: visible;
+}
+.card-title {
+  font-family: var(--font-hud);
+  font-size: 10px;
+  letter-spacing: 3px;
+  color: var(--accent);
+  text-transform: uppercase;
+  margin-bottom: 16px;
+}
+
+/* ---- AUTOCOMPLETE MENU ---- */
+.autocomplete-container { position: relative; flex: 1.5; }
+#menu-dropdown {
+  position: absolute;
+  top: 100%; left: 0; right: 0;
+  background: var(--bg-card2);
+  border: 1px solid var(--accent);
+  border-radius: 0 0 8px 8px;
+  z-index: 1000;
+  max-height: 200px;
+  overflow-y: auto;
+  display: none;
+  box-shadow: var(--glow);
+}
+.menu-item {
+  padding: 10px 14px;
+  display: flex;
+  justify-content: space-between;
+  cursor: pointer;
+  border-bottom: 1px solid var(--border);
+}
+.menu-item:hover { background: rgba(0,229,255,0.1); }
+.menu-del { color: var(--danger); font-size: 12px; padding: 0 5px; }
+
+/* ---- INPUTS & BUTTONS ---- */
+.input-row { display: flex; gap: 10px; margin-bottom: 12px; }
+.hud-input {
+  background: var(--bg-deep);
+  border: 1px solid var(--border2);
+  border-radius: var(--radius);
+  color: var(--text);
+  font-family: var(--font-body);
+  font-size: 15px;
+  padding: 10px 14px;
+  outline: none;
+  width: 100%;
+}
+.btn {
+  font-family: var(--font-hud);
+  font-size: 10px;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  padding: 10px 18px;
+  border-radius: var(--radius);
+  border: 1px solid;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+.btn-primary { background: rgba(0,229,255,0.1); border-color: var(--accent); color: var(--accent); }
+.btn-success { background: rgba(118,255,3,0.1); border-color: var(--success); color: var(--success); width: 100%; }
+
+/* ---- STATS ---- */
+.stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); gap: 12px; margin-bottom: 16px; }
+.stat-box { background: var(--bg-card2); border: 1px solid var(--border); border-radius: var(--radius); padding: 12px; text-align: center; }
+.stat-label { font-family: var(--font-hud); font-size: 8px; color: var(--text-muted); text-transform: uppercase; margin-bottom: 6px; }
+.stat-val { font-family: var(--font-hud); font-size: 22px; font-weight: 700; }
+
+/* ---- SUPPLEMENTS ---- */
+.supp-item { display: flex; align-items: center; gap: 12px; padding: 12px; background: var(--bg-card2); border: 1px solid var(--border); border-radius: 8px; margin-bottom: 8px; }
+.supp-check { width: 22px; height: 22px; border: 2px solid var(--border2); border-radius: 5px; cursor: pointer; display: flex; align-items: center; justify-content: center; }
+.supp-check.on { background: var(--success); border-color: var(--success); color: #000; }
+.supp-time { font-size: 10px; color: var(--accent); font-family: var(--font-mono); margin-left: 10px; }
+
+/* ---- TOAST ---- */
+#toast { position: fixed; bottom: 28px; left: 50%; transform: translateX(-50%) translateY(80px); background: var(--bg-card2); border: 1px solid var(--accent); border-radius: 24px; padding: 10px 22px; z-index: 2000; transition: 0.3s; pointer-events: none; }
+#toast.show { transform: translateX(-50%) translateY(0); }
+
+/* ---- MODAL ---- */
+#modal-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.8); z-index: 1000; align-items: center; justify-content: center; }
+#modal-box { background: var(--bg-card); border: 1px solid var(--accent); padding: 30px; border-radius: 14px; text-align: center; max-width: 400px; }
+</style>
+</head>
+<body class="theme-default">
+
+<div id="app">
+  <div id="topbar">
+    <div class="logo">Track<span>Dat</span>Azz</div>
+    <div id="topbar-nav">
+      <button class="nav-btn active" onclick="showPage('home')">⚡ Track</button>
+      <button class="nav-btn" onclick="showPage('supplements')">💊 Supps</button>
+      <button class="nav-btn" onclick="showPage('shop')">🛒 Shop</button>
+      <button class="nav-btn" onclick="showPage('settings')">⚙ Settings</button>
+    </div>
+    <div id="topbar-right">
+      <div class="currency-row">
+        <div class="coins-display"><span id="coin-count">0</span> 🪙</div>
+        <div class="rubies-display" onclick="showPage('shop')"><span id="ruby-count">0</span> 💎</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="page active" id="page-home">
+    <div class="stats-grid">
+      <div class="stat-box"><div class="stat-label">Consumed</div><div class="stat-val" id="stat-consumed" style="color:var(--accent)">0</div></div>
+      <div class="stat-box"><div class="stat-label">Goal</div><div class="stat-val" id="stat-goal" style="color:var(--gold)">—</div></div>
+      <div class="stat-box"><div class="stat-label">Streak</div><div class="stat-val" id="stat-streak" style="color:var(--ruby)">0</div></div>
+    </div>
+
+    <div class="card">
+      <div class="card-title">Log Entry</div>
+      <div class="input-row">
+        <div class="autocomplete-container">
+          <input class="hud-input" id="inp-food" type="text" placeholder="What did you eat?" oninput="handleMenuSearch()" autocomplete="off" />
+          <div id="menu-dropdown"></div>
+        </div>
+        <input class="hud-input" id="inp-cal" type="number" placeholder="Calories" style="flex:0.8" />
+        <button class="btn btn-primary" onclick="addEntry()">ADD</button>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-title">Today's Log</div>
+      <ul id="log-list" style="list-style:none"></ul>
+      <button class="btn btn-success" style="margin-top:20px;" onclick="submitDay()">⚡ SUBMIT DAY & CLAIM REWARDS</button>
+    </div>
+  </div>
+
+  <div class="page" id="page-supplements">
+    <div class="card">
+      <div class="card-title">Add Supplement</div>
+      <div class="input-row">
+        <input class="hud-input" id="supp-name-inp" type="text" placeholder="Name" />
+        <button class="btn btn-primary" onclick="addSupplement()">ADD</button>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-title">Checklist</div>
+      <div id="supp-list"></div>
+    </div>
+  </div>
+
+  <div class="page" id="page-shop">
+    <div class="card">
+      <div class="card-title">Ruby Shop</div>
+      <p style="color:var(--text-muted); margin-bottom:15px;">Spend Rubies earned from consistency and weight loss.</p>
+      <div id="shop-items" style="display:grid; grid-template-columns:1fr 1fr; gap:10px;">
+        <div class="stat-box" style="border-color:var(--ruby)">
+          <div class="stat-label">LEGENDARY THEME</div>
+          <div class="stat-val" style="font-size:14px; color:var(--ruby)">50 💎</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="page" id="page-settings">
+    <div class="card">
+      <div class="card-title">Calorie Targets</div>
+      <input class="hud-input" id="set-maintenance" type="number" placeholder="Maintenance" style="margin-bottom:10px" />
+      <input class="hud-input" id="set-goal" type="number" placeholder="Daily Goal" style="margin-bottom:10px" />
+      <button class="btn btn-primary" onclick="
