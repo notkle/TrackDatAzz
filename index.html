@@ -654,10 +654,11 @@ function addEntry(){
   const calEl=document.getElementById('inp-cal');
   const name=nameEl.value.trim();
   const cal=parseInt(calEl.value);
-  if(!name||isNaN(cal)||cal<0){showToast('Fill in food name and calories!','red');return;}
+  if(isNaN(cal)||cal<0){showToast('Enter a calorie amount!','red');return;}
+  const label=name||'—';
   const now=new Date();
-  state.todayLog.push({name,cal,time:now.toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'})});
-  saveToMenu(name,cal);
+  state.todayLog.push({name:label,cal,time:now.toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'})});
+  if(name)saveToMenu(name,cal);
   nameEl.value=''; calEl.value='';
   closeAcDrop(); nameEl.focus();
   save(); renderHome();
