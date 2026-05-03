@@ -662,7 +662,8 @@ function addEntry(){
   const label=name||'—';
   const now=new Date();
   state.todayLog.push({name:label,cal,time:now.toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'})});
-  if(name)saveToMenu(name,cal);
+  if(name&&!aiEstimated)saveToMenu(name,cal);
+  aiEstimated=false;
   nameEl.value=''; calEl.value='';
   closeAcDrop(); nameEl.focus();
   save(); renderHome();
@@ -825,7 +826,7 @@ function getAcMatches(){
 function highlightAc(){
   document.querySelectorAll('.ac-item').forEach((el,i)=>{el.classList.toggle('hi',i===acIdx);});
 }
-document.getElementById('inp-food').addEventListener('input',function(){acIdx=-1;buildAcDrop(this.value);updateAiButton();});
+document.getElementById('inp-food').addEventListener('input',function(){acIdx=-1;buildAcDrop(this.value);updateAiButton();aiEstimated=false;});
 document.getElementById('inp-food').addEventListener('keydown',function(e){
   const drop=document.getElementById('ac-drop');
   const items=drop.querySelectorAll('.ac-item');
@@ -1148,7 +1149,7 @@ function doRoll(){
   },80);
 }
 
-// ===================== AI ESTIMATE =====================
+let aiEstimated=false;
 const WORKER_URL='https://trackdatazz-proxy.sotempyhehe.workers.dev';
 
 async function aiEstimate(){
@@ -1170,8 +1171,14 @@ async function aiEstimate(){
     const rawText=await res.text();
     console.log('Worker status:',res.status);
     console.log('Worker response:',rawText);
-    if(!res.ok) throw new Error(`HTTP ${res.status}: ${rawText}`);
     const data=JSON.parse(rawText);
+    // Gemini returned an API-level error (e.g. quota exceeded)
+    if(data?.error){
+      const code=data.error.code;
+      if(code===429) throw new Error('Rate limit hit — try again in a few seconds.');
+      throw new Error(data.error.message||`Gemini error ${code}`);
+    }
+    if(!res.ok) throw new Error(`HTTP ${res.status}`);
     const text=data?.candidates?.[0]?.content?.parts?.[0]?.text||'';
     console.log('Gemini text:',text);
     const clean=text.replace(/```json|```/g,'').trim();
@@ -1181,6 +1188,7 @@ async function aiEstimate(){
     status.textContent=parsed.breakdown||'';
     status.style.color='var(--purple)';
     updateAiButton();
+    aiEstimated=true;
     showToast(`AI estimate: ~${cal} cal ✨`,'');
   }catch(e){
     console.error('AI estimate error:',e);
