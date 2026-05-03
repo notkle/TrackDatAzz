@@ -1167,9 +1167,13 @@ async function aiEstimate(){
       headers:{'Content-Type':'application/json'},
       body:JSON.stringify({food})
     });
-    if(!res.ok) throw new Error(`HTTP ${res.status}`);
-    const data=await res.json();
+    const rawText=await res.text();
+    console.log('Worker status:',res.status);
+    console.log('Worker response:',rawText);
+    if(!res.ok) throw new Error(`HTTP ${res.status}: ${rawText}`);
+    const data=JSON.parse(rawText);
     const text=data?.candidates?.[0]?.content?.parts?.[0]?.text||'';
+    console.log('Gemini text:',text);
     const clean=text.replace(/```json|```/g,'').trim();
     const parsed=JSON.parse(clean);
     const cal=Math.round(parsed.calories);
@@ -1179,9 +1183,10 @@ async function aiEstimate(){
     updateAiButton();
     showToast(`AI estimate: ~${cal} cal ✨`,'');
   }catch(e){
-    status.textContent='Estimate failed — try again';
+    console.error('AI estimate error:',e);
+    status.textContent='Error: '+e.message;
     status.style.color='var(--accent2)';
-    showToast('AI estimate failed','red');
+    showToast('AI estimate failed — see browser console (F12)','red');
   }finally{
     btn.disabled=false;
     btn.textContent='✨ AI ESTIMATE';
