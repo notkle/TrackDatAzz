@@ -343,7 +343,11 @@ body.theme-matrix{background:#000;--accent:#00ff41;--border:rgba(0,255,65,0.2);-
       <input class="hud-input" id="inp-cal" type="number" placeholder="Calories" min="0" style="max-width:130px;">
       <button class="btn btn-primary" onclick="addEntry()">ADD</button>
     </div>
-    <div style="font-size:10px;color:var(--text-dim);font-family:var(--font-mono);">↑↓ navigate menu · Enter to add</div>
+    <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;">
+      <div style="font-size:10px;color:var(--text-dim);font-family:var(--font-mono);">↑↓ navigate menu · Enter to add</div>
+      <button class="btn btn-sm" id="btn-ai-estimate" onclick="aiEstimate()" style="display:none;border-color:var(--purple);color:var(--purple);background:rgba(179,136,255,0.08);">✨ AI ESTIMATE</button>
+      <span id="ai-status" style="font-size:10px;font-family:var(--font-mono);color:var(--text-dim);"></span>
+    </div>
   </div>
 
   <div class="card">
@@ -821,7 +825,7 @@ function getAcMatches(){
 function highlightAc(){
   document.querySelectorAll('.ac-item').forEach((el,i)=>{el.classList.toggle('hi',i===acIdx);});
 }
-document.getElementById('inp-food').addEventListener('input',function(){acIdx=-1;buildAcDrop(this.value);});
+document.getElementById('inp-food').addEventListener('input',function(){acIdx=-1;buildAcDrop(this.value);updateAiButton();});
 document.getElementById('inp-food').addEventListener('keydown',function(e){
   const drop=document.getElementById('ac-drop');
   const items=drop.querySelectorAll('.ac-item');
@@ -1144,7 +1148,55 @@ function doRoll(){
   },80);
 }
 
-// ===================== SHOP =====================
+// ===================== AI ESTIMATE =====================
+const WORKER_URL='https://trackdatazz-proxy.sotempyhehe.workers.dev';
+
+async function aiEstimate(){
+  const food=document.getElementById('inp-food').value.trim();
+  if(!food){showToast('Describe what you ate first!','red');return;}
+
+  const btn=document.getElementById('btn-ai-estimate');
+  const status=document.getElementById('ai-status');
+  btn.disabled=true;
+  btn.textContent='✨ ESTIMATING...';
+  status.textContent='';
+
+  try{
+    const res=await fetch(WORKER_URL,{
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({food})
+    });
+    if(!res.ok) throw new Error(`HTTP ${res.status}`);
+    const data=await res.json();
+    const text=data?.candidates?.[0]?.content?.parts?.[0]?.text||'';
+    const clean=text.replace(/```json|```/g,'').trim();
+    const parsed=JSON.parse(clean);
+    const cal=Math.round(parsed.calories);
+    document.getElementById('inp-cal').value=cal;
+    status.textContent=parsed.breakdown||'';
+    status.style.color='var(--purple)';
+    updateAiButton();
+    showToast(`AI estimate: ~${cal} cal ✨`,'');
+  }catch(e){
+    status.textContent='Estimate failed — try again';
+    status.style.color='var(--accent2)';
+    showToast('AI estimate failed','red');
+  }finally{
+    btn.disabled=false;
+    btn.textContent='✨ AI ESTIMATE';
+  }
+}
+
+function updateAiButton(){
+  const food=document.getElementById('inp-food').value.trim();
+  const cal=document.getElementById('inp-cal').value;
+  const btn=document.getElementById('btn-ai-estimate');
+  btn.style.display=(food&&!cal)?'inline-flex':'none';
+  if(!food||cal)document.getElementById('ai-status').textContent='';
+}
+
+
 const SHOP_BG=[
   {id:'theme-default',name:'Default', color:'#0a0c10',price:0,   tier:'common',   preview:'🌑'},
   {id:'theme-void',   name:'Void',    color:'#000',   price:150, tier:'common',   preview:'⬛'},
@@ -1287,6 +1339,7 @@ function floatAnim(icon,delta,color){
 }
 
 // ===================== KEYBOARD =====================
+document.getElementById('inp-cal').addEventListener('input',updateAiButton);
 document.getElementById('inp-cal').addEventListener('keydown',e=>{if(e.key==='Enter')addEntry();});
 document.getElementById('supp-name-inp').addEventListener('keydown',e=>{if(e.key==='Enter')document.getElementById('supp-dose-inp').focus();});
 document.getElementById('supp-dose-inp').addEventListener('keydown',e=>{if(e.key==='Enter')addSupplement();});
